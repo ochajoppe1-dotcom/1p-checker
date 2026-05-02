@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>☠ 副業LP危険度スキャナー ☠</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    @keyframes flicker {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.85; }
+      52% { opacity: 0.4; }
+      54% { opacity: 1; }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-3px); }
+      75% { transform: translateX(3px); }
+    }
+
+    @keyframes pulse-red {
+      0%, 100% { box-shadow: 0 0 30px rgba(255,0,0,0.6), inset 0 0 30px rgba(255,0,0,0.2); }
+      50% { box-shadow: 0 0 60px rgba(255,0,0,0.9), inset 0 0 50px rgba(255,0,0,0.4); }
+    }
+
+    @keyframes glow {
+      0%, 100% { text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000, 0 0 30px #8b0000; }
+      50% { text-shadow: 0 0 15px #ff3333, 0 0 30px #ff0000, 0 0 50px #8b0000; }
+    }
+
+    @keyframes drip {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(100vh); }
+    }
+
+    body {
+      font-family: 'Times New Roman', 'Hiragino Mincho Pro', serif;
+      background: #0a0000;
+      background-image:
+        radial-gradient(ellipse at top, #1a0000 0%, #000000 50%),
+        repeating-linear-gradient(
+          0deg,
+          rgba(139, 0, 0, 0.03) 0px,
+          rgba(139, 0, 0, 0.03) 1px,
+          transparent 1px,
+          transparent 3px
+        );
+      min-height: 100vh;
+      padding: 24px 16px;
+      color: #d4d4d4;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 8px;
+      background: linear-gradient(90deg, transparent, #8b0000, #ff0000, #8b0000, transparent);
+      box-shadow: 0 0 20px #ff0000;
+      z-index: 100;
+      animation: flicker 4s infinite;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 10;
+    }
+
+    .header {
+      text-align: center;
+      color: #ff3333;
+      margin-bottom: 28px;
+      padding-top: 12px;
+    }
+
+    .header h1 {
+      font-size: 30px;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      animation: glow 2.5s ease-in-out infinite;
+      color: #ff0000;
+    }
+
+    .header p {
+      font-size: 13px;
+      color: #aaa;
+      margin-top: 8px;
+      letter-spacing: 0.1em;
+    }
+
+    .blood-line {
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #8b0000, transparent);
+      margin: 16px 0;
+    }
+
+    .card {
+      background: rgba(15, 5, 5, 0.92);
+      border: 1px solid #4a0000;
+      border-radius: 4px;
+      box-shadow: 0 0 30px rgba(139, 0, 0, 0.4), inset 0 0 30px rgba(0,0,0,0.5);
+      padding: 28px;
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #ff0000, transparent);
+    }
+
+    .input-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .input-tabs button {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #4a0000;
+      background: #1a0000;
+      border-radius: 2px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #888;
+      font-family: inherit;
+      letter-spacing: 0.1em;
+      transition: all 0.3s;
+    }
+
+    .input-tabs button.active {
+      border-color: #ff0000;
+      color: #ff3333;
+      background: #2a0505;
+      box-shadow: 0 0 10px rgba(255,0,0,0.3);
+    }
+
+    textarea, input[type="url"] {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #4a0000;
+      background: #0a0000;
+      border-radius: 2px;
+      font-size: 14px;
+      font-family: 'Courier New', monospace;
+      resize: vertical;
+      outline: none;
+      transition: all 0.3s;
+      color: #d4d4d4;
+    }
+
+    textarea {
+      min-height: 200px;
+    }
+
+    textarea:focus, input[type="url"]:focus {
+      border-color: #ff0000;
+      box-shadow: 0 0 15px rgba(255,0,0,0.4);
+    }
+
+    textarea::placeholder, input[type="url"]::placeholder {
+      color: #555;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .primary-btn {
+      flex: 1;
+      padding: 14px;
+      background: linear-gradient(180deg, #8b0000, #4a0000);
+      color: #fff;
+      border: 1px solid #ff0000;
+      border-radius: 2px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      letter-spacing: 0.15em;
+      font-family: inherit;
+      transition: all 0.3s;
+      box-shadow: 0 0 10px rgba(255,0,0,0.3);
+    }
+
+    .primary-btn:hover {
+      background: linear-gradient(180deg, #c00000, #6a0000);
+      box-shadow: 0 0 20px rgba(255,0,0,0.6);
+    }
+
+    .primary-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .sample-btn {
+      padding: 14px 18px;
+      background: #1a0000;
+      color: #888;
+      border: 1px solid #4a0000;
+      border-radius: 2px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+      letter-spacing: 0.1em;
+    }
+
+    .sample-btn:hover {
+      color: #ff3333;
+      border-color: #ff0000;
+    }
+
+    .disclaimer-top {
+      background: #1a0a0a;
+      border: 1px solid #3a0000;
+      border-left: 3px solid #8b0000;
+      padding: 12px 14px;
+      font-size: 11px;
+      color: #888;
+      line-height: 1.6;
+      margin-bottom: 16px;
+      font-family: inherit;
+    }
+
+    .loading-text {
+      text-align: center;
+      color: #ff3333;
+      font-size: 14px;
+      margin-top: 12px;
+      animation: flicker 1.5s infinite;
+      letter-spacing: 0.2em;
+    }
+
+    .result {
+      display: none;
+    }
+
+    .result.show { display: block; animation: fadeIn 0.5s; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .score-card {
+      text-align: center;
+      padding: 32px 20px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      position: relative;
+      border: 2px solid;
+    }
+
+    .score-card.danger {
+      background: radial-gradient(circle at center, #4a0000, #0a0000);
+      border-color: #ff0000;
+      animation: pulse-red 1.5s infinite, shake 0.5s 3;
+    }
+
+    .score-card.warning {
+      background: radial-gradient(circle at center, #4a2000, #0a0000);
+      border-color: #ff6600;
+      box-shadow: 0 0 30px rgba(255,102,0,0.5);
+    }
+
+    .score-card.caution {
+      background: radial-gradient(circle at center, #3a3000, #0a0000);
+      border-color: #ffaa00;
+      box-shadow: 0 0 20px rgba(255,170,0,0.4);
+    }
+
+    .score-card.safe {
+      background: radial-gradient(circle at center, #003a00, #0a0000);
+      border-color: #00aa00;
+      box-shadow: 0 0 20px rgba(0,170,0,0.4);
+    }
+
+    .score-label {
+      font-size: 13px;
+      letter-spacing: 0.3em;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 8px;
+    }
+
+    .score-num {
+      font-size: 80px;
+      font-weight: 900;
+      line-height: 1;
+      color: #fff;
+      font-family: 'Times New Roman', serif;
+      text-shadow: 0 0 20px currentColor;
+    }
+
+    .score-num small {
+      font-size: 32px;
+      opacity: 0.8;
+    }
+
+    .danger .score-num { color: #ff0000; animation: glow 1s infinite; }
+    .warning .score-num { color: #ff6600; }
+    .caution .score-num { color: #ffaa00; }
+    .safe .score-num { color: #00ff00; }
+
+    .verdict {
+      font-size: 22px;
+      font-weight: bold;
+      margin-top: 12px;
+      letter-spacing: 0.15em;
+      color: #fff;
+    }
+
+    .danger .verdict {
+      color: #ff3333;
+      text-shadow: 0 0 15px #ff0000;
+    }
+
+    .verdict-sub {
+      font-size: 12px;
+      margin-top: 6px;
+      color: rgba(255,255,255,0.7);
+      letter-spacing: 0.1em;
+    }
+
+    .skull-decoration {
+      font-size: 22px;
+      margin: 0 8px;
+      vertical-align: middle;
+    }
+
+    .summary-box {
+      background: #1a0505;
+      border-left: 4px solid #ff0000;
+      padding: 14px 16px;
+      border-radius: 2px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      line-height: 1.7;
+      color: #ddd;
+    }
+
+    .summary-box.safe-box {
+      background: #051a05;
+      border-color: #00aa00;
+    }
+
+    .summary-title {
+      font-weight: bold;
+      color: #ff3333;
+      letter-spacing: 0.1em;
+      font-size: 15px;
+    }
+
+    .safe-box .summary-title {
+      color: #66ff66;
+    }
+
+    .pattern-section {
+      margin-bottom: 18px;
+    }
+
+    .pattern-title {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      padding: 8px 12px;
+      border-radius: 2px;
+      letter-spacing: 0.1em;
+      border-left: 3px solid;
+    }
+
+    .pattern-title.critical {
+      background: #2a0000;
+      color: #ff3333;
+      border-color: #ff0000;
+    }
+
+    .pattern-title.warning {
+      background: #2a1500;
+      color: #ff8833;
+      border-color: #ff6600;
+    }
+
+    .pattern-title.caution {
+      background: #2a2200;
+      color: #ffcc33;
+      border-color: #ffaa00;
+    }
+
+    .pattern-list {
+      list-style: none;
+      padding-left: 4px;
+    }
+
+    .pattern-item {
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      background: rgba(20, 5, 5, 0.6);
+      border: 1px solid #2a0000;
+      border-radius: 2px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .pattern-item .label {
+      font-weight: bold;
+      color: #eee;
+    }
+
+    .pattern-item .desc {
+      color: #888;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .pattern-item .matched {
+      background: #4a0000;
+      padding: 2px 6px;
+      border-radius: 2px;
+      color: #ff6666;
+      font-weight: 500;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+    }
+
+    .footer-note {
+      text-align: center;
+      color: #555;
+      font-size: 10px;
+      margin-top: 32px;
+      line-height: 1.7;
+      padding: 0 8px;
+      letter-spacing: 0.1em;
+    }
+
+    .reset-btn {
+      width: 100%;
+      padding: 14px;
+      background: #1a0000;
+      color: #ff3333;
+      border: 1px solid #4a0000;
+      border-radius: 2px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-top: 12px;
+      font-family: inherit;
+      letter-spacing: 0.15em;
+      transition: all 0.3s;
+    }
+
+    .reset-btn:hover {
+      background: #2a0000;
+      border-color: #ff0000;
+    }
+
+    .hidden { display: none; }
+
+    .corner-decoration {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #ff0000;
+    }
+
+    .corner-tl { top: -2px; left: -2px; border-right: none; border-bottom: none; }
+    .corner-tr { top: -2px; right: -2px; border-left: none; border-bottom: none; }
+    .corner-bl { bottom: -2px; left: -2px; border-right: none; border-top: none; }
+    .corner-br { bottom: -2px; right: -2px; border-left: none; border-top: none; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>☠ 副業LP危険度スキャナー ☠</h1>
+    <p>──── 27の罠を機械的に検出する ────</p>
+    <div class="blood-line"></div>
+  </div>
+
+  <div class="card" id="inputCard">
+    <div class="corner-decoration corner-tl"></div>
+    <div class="corner-decoration corner-tr"></div>
+    <div class="corner-decoration corner-bl"></div>
+    <div class="corner-decoration corner-br"></div>
+
+    <div class="disclaimer-top">
+      ⚠ 本ツールは販売ページに含まれる一般的な訴求パターンを機械的に検出するものです。特定の商品・サービス・販売者を批判するものではありません。最終判断は自己責任で行ってください。
+    </div>
+
+    <div class="input-tabs">
+      <button class="active" onclick="switchTab('text', this)">テキスト</button>
+      <button onclick="switchTab('url', this)">URL</button>
+    </div>
+
+    <div id="textTab">
+      <textarea id="lpText" placeholder="販売ページの文章をコピー&ペースト..."></textarea>
+    </div>
+    <div id="urlTab" class="hidden">
+      <input type="url" id="lpUrl" placeholder="https://example.com/lp">
+      <p style="font-size:11px;color:#666;margin-top:8px;letter-spacing:0.05em;">
+        ※ URL先のページ本文を取得して解析します(外部プロキシ経由)
+      </p>
+    </div>
+
+    <div class="button-row">
+      <button class="primary-btn" id="analyzeBtn" onclick="analyze()">▶ スキャン開始</button>
+      <button class="sample-btn" onclick="loadSample()">サンプル</button>
+    </div>
+
+    <div class="loading-text hidden" id="loadingText">▼ ▼ ▼ 解析中 ▼ ▼ ▼</div>
+  </div>
+
+  <div class="result" id="result">
+    <div class="card">
+      <div class="corner-decoration corner-tl"></div>
+      <div class="corner-decoration corner-tr"></div>
+      <div class="corner-decoration corner-bl"></div>
+      <div class="corner-decoration corner-br"></div>
+
+      <div class="score-card" id="scoreCard">
+        <div class="score-label">DANGER LEVEL</div>
+        <div class="score-num"><span id="scoreNum">0</span><small>%</small></div>
+        <div class="verdict" id="verdict"><span class="skull-decoration">☠</span><span id="verdictText">判定中</span><span class="skull-decoration">☠</span></div>
+        <div class="verdict-sub" id="verdictSub"></div>
+      </div>
+
+      <div id="summaryBox" class="summary-box">
+        <div class="summary-title" id="summaryTitle"></div>
+        <div id="summaryText" style="margin-top:8px;"></div>
+      </div>
+
+      <div id="patternResults"></div>
+
+      <button class="reset-btn" onclick="reset()">◀ もう一度スキャン</button>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    ─── 副業LP危険度スキャナー ───<br>
+    本ツールの判定は参考情報であり、検出パターンは販売ページで一般に見られる訴求手法を示すものです。<br>必ずしも違法・不当を意味しません。
+  </div>
+</div>
+
+<script>
+  // 判定パターン定義
+  const PATTERNS = [
+    { id:'F1', cat:'critical', weight:30, label:'低額入口商材の特徴',
+      desc:'低価格で導入し、後段で高額商材へ誘導する典型構造の入口に該当',
+      kw:['数千円','お試し価格','期間限定価格','初回限定','特別価格','スターター','入門編'] },
+    { id:'F2', cat:'critical', weight:30, label:'個別面談・Zoom誘導',
+      desc:'個別環境での追加提案を行う構造の特徴',
+      kw:['個別面談','個別相談','Zoom面談','30分面談','60分相談','1対1','個別コンサル'] },
+    { id:'F4', cat:'critical', weight:30, label:'高額バックエンド商材の存在',
+      desc:'数十万円規模の追加商材へ誘導する構造を含む',
+      kw:['コンサル','塾','コミュニティ','プレミアム','上位プラン','本格コース','マスタークラス'] },
+    { id:'G1', cat:'critical', weight:25, label:'特商法表記が不明瞭',
+      desc:'運営者情報・責任範囲の表示が不十分な可能性',
+      kw:['特商法','特定商取引'], invert:true },
+
+    { id:'A1', cat:'warning', weight:15, label:'月商表記(月利との混同を誘発)',
+      desc:'月商は売上であり利益ではない点に注意',
+      kw:['月商','月の売上','月収100万','月収300万','月収500万'] },
+    { id:'A4', cat:'warning', weight:15, label:'日付のないスクショ訴求',
+      desc:'時点の検証ができない実績画像',
+      kw:['実績スクショ','売上スクショ','証拠画像','成果画像'] },
+    { id:'C3', cat:'warning', weight:15, label:'匿名・イニシャルの成功談',
+      desc:'実在検証が困難な利用者の声',
+      kw:['Aさん','Bさん','受講生の声','M.Sさん','K.Tさん','匿名希望','イニシャル'] },
+    { id:'F3', cat:'warning', weight:15, label:'LINE登録への誘導',
+      desc:'クローズドな環境への誘導要素',
+      kw:['LINE登録','LINE@','公式LINE','LINEで','ライン登録'] },
+    { id:'G2', cat:'warning', weight:15, label:'返金保証の条件が厳格',
+      desc:'実質的な返金が難しい条件設定の可能性',
+      kw:['返金保証','返金条件','30日以内に','課題提出','全行動の証明'] },
+    { id:'G3', cat:'warning', weight:15, label:'運営者情報が個人名のみ',
+      desc:'法人格の記載がない',
+      kw:['運営者:','責任者:','個人事業主'] },
+
+    { id:'A2', cat:'caution', weight:8, label:'労力の少なさを強調',
+      desc:'最小労力で稼げる印象の演出',
+      kw:['1日5分','1日10分','スマホだけ','片手間','スキマ時間','放ったらかし'] },
+    { id:'A3', cat:'caution', weight:8, label:'価格の分割表示訴求',
+      desc:'1日換算等の安価な印象を演出',
+      kw:['1日たった','1日○○円','コーヒー1杯','分割払い','1日分'] },
+    { id:'B1', cat:'caution', weight:8, label:'限定・先着の煽り',
+      desc:'希少性で即決を促す手法',
+      kw:['限定','先着','残り○名','○名様限定','枠が埋まる'] },
+    { id:'B2', cat:'caution', weight:8, label:'カウントダウンタイマー',
+      desc:'時間切れの焦りを演出',
+      kw:['カウントダウン','残り○時間','タイマー','終了まで'] },
+    { id:'B4', cat:'caution', weight:8, label:'値上げ予告',
+      desc:'今買わないと損という心理を演出',
+      kw:['次回値上げ','値上げ予定','今だけの価格'] },
+    { id:'C1', cat:'caution', weight:8, label:'派手な生活演出',
+      desc:'高級品・成功イメージでの訴求',
+      kw:['タワマン','高級車','フェラーリ','ロレックス','ハワイ','ファーストクラス'] },
+    { id:'C2', cat:'caution', weight:8, label:'札束等の金銭演出',
+      desc:'金銭的成功の象徴的演出',
+      kw:['札束','現金','大金'] },
+    { id:'C5', cat:'caution', weight:8, label:'数値根拠の薄い実績',
+      desc:'検証困難な指導実績の主張',
+      kw:['数百名','1000名以上','延べ','指導してきた'] },
+    { id:'D1', cat:'caution', weight:8, label:'ノウハウの内容を伏せる',
+      desc:'核心を秘匿することで購買意欲を煽る',
+      kw:['門外不出','秘密のノウハウ','限定公開','非公開ノウハウ'] },
+    { id:'D2', cat:'caution', weight:8, label:'再現性100%訴求',
+      desc:'誰でも稼げると断言する誇大表現の可能性',
+      kw:['再現性100','誰でも稼げる','誰でもできる','100%稼げる'] },
+    { id:'D3', cat:'caution', weight:8, label:'才能・経験不要訴求',
+      desc:'初心者でもOKを過度に強調',
+      kw:['特別な才能','知識不要','経験不要','未経験OK','才能は要らない'] },
+    { id:'D4', cat:'caution', weight:8, label:'詳細は購入後',
+      desc:'内容を伏せた状態で購入を求める',
+      kw:['詳細は購入後','購入された方のみ','参加後にお伝え'] },
+    { id:'E1', cat:'caution', weight:8, label:'借金からの逆転ストーリー',
+      desc:'感情移入を促すテンプレ的自分語り',
+      kw:['借金','どん底','人生のどん底'] },
+    { id:'E2', cat:'caution', weight:8, label:'メンターとの出会い演出',
+      desc:'特別な人物との出会いでの転機演出',
+      kw:['人物との出会い','メンター','師匠','人生が変わった'] },
+    { id:'E3', cat:'caution', weight:8, label:'家族の苦労ストーリー',
+      desc:'家族を養う苦労の演出',
+      kw:['家族を養','妻と子供','子供に','家族のため'] }
+  ];
+
+  let currentTab = 'text';
+
+  function switchTab(type, btn) {
+    currentTab = type;
+    document.querySelectorAll('.input-tabs button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('textTab').classList.toggle('hidden', type!=='text');
+    document.getElementById('urlTab').classList.toggle('hidden', type!=='url');
+  }
+
+  function loadSample() {
+    document.getElementById('lpText').value =
+`【高額な月収も夢じゃない】
+スマホだけで稼げる副業ノウハウ完全攻略法
+
+私はかつて借金を抱え、人生のどん底でした。
+そんな時、ある人物との出会いで人生が変わりました。
+
+今では月商を大きく伸ばし、受講生のAさんも初月から成果を出しています。
+これまで延べ1000名以上を指導してきた実績があります。
+
+特別な才能は不要、1日5分の作業で誰でも再現できます。
+1日たったコーヒー1杯分のお値段、お試し価格でノウハウを公開します。
+
+★限定100名★
+カウントダウン:残り3時間!次回は値上げ予定。
+
+購入された方には個別Zoom面談(30分)+1ヶ月のメールサポート付き!
+さらに公式LINE登録で限定特典をプレゼント!
+
+ご購入後、本格的に学びたい方には上位プランの本格コースもご用意しています。
+
+運営者:山田太郎
+返金保証:30日以内・全課題提出が条件`;
+    if (currentTab !== 'text') {
+      document.querySelectorAll('.input-tabs button')[0].click();
+    }
+  }
+
+  function htmlToText(html) {
+    return html
+      .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+      .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  async function fetchUrlContent(url) {
+    // 複数のCORSプロキシを順番に試す
+    const proxies = [
+      {
+        name: 'AllOrigins',
+        url: 'https://api.allorigins.win/get?url=' + encodeURIComponent(url),
+        parse: async (res) => { const d = await res.json(); return d.contents; }
+      },
+      {
+        name: 'CorsProxy.io',
+        url: 'https://corsproxy.io/?' + encodeURIComponent(url),
+        parse: async (res) => await res.text()
+      },
+      {
+        name: 'CodeTabs',
+        url: 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url),
+        parse: async (res) => await res.text()
+      },
+      {
+        name: 'AllOrigins(raw)',
+        url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+        parse: async (res) => await res.text()
+      }
+    ];
+
+    const errors = [];
+    for (const p of proxies) {
+      try {
+        console.log('Trying proxy:', p.name);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        const response = await fetch(p.url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          errors.push(`${p.name}: HTTP ${response.status}`);
+          continue;
+        }
+
+        const html = await p.parse(response);
+        if (!html || html.length < 100) {
+          errors.push(`${p.name}: 内容が空`);
+          continue;
+        }
+
+        const text = htmlToText(html);
+        if (!text || text.length < 50) {
+          errors.push(`${p.name}: テキスト変換後が空`);
+          continue;
+        }
+
+        console.log('Success with:', p.name, 'text length:', text.length);
+        return text;
+      } catch (e) {
+        const msg = e.name === 'AbortError' ? 'タイムアウト' : e.message;
+        errors.push(`${p.name}: ${msg}`);
+        console.warn(p.name, 'failed:', e);
+      }
+    }
+
+    throw new Error('全プロキシ失敗:\n' + errors.join('\n'));
+  }
+
+  async function analyze() {
+    const btn = document.getElementById('analyzeBtn');
+    const loading = document.getElementById('loadingText');
+    let text = '';
+
+    if (currentTab === 'url') {
+      const url = document.getElementById('lpUrl').value.trim();
+      if (!url) { alert('URLを入力してください'); return; }
+
+      btn.disabled = true;
+      btn.textContent = '取得中...';
+      loading.classList.remove('hidden');
+
+      try {
+        text = await fetchUrlContent(url);
+        if (!text || text.length < 50) {
+          throw new Error('十分なテキストが取得できませんでした');
+        }
+      } catch (e) {
+        console.error('Fetch error:', e);
+        const detail = e.message.length > 200 ? e.message.substring(0,200)+'...' : e.message;
+        alert('URLの取得に失敗しました\n\n' + detail +
+          '\n\n【原因として考えられること】\n' +
+          '・対象サイトがアクセスを拒否している\n' +
+          '・プロキシサービスが一時的に停止中\n' +
+          '・ネットワーク接続の問題\n\n' +
+          '→ 対象ページを開いて本文をコピー&ペーストしてください\n' +
+          '(テキストタブを使用)');
+        btn.disabled = false;
+        btn.textContent = '▶ スキャン開始';
+        loading.classList.add('hidden');
+        return;
+      }
+      btn.disabled = false;
+      btn.textContent = '▶ スキャン開始';
+      loading.classList.add('hidden');
+    } else {
+      text = document.getElementById('lpText').value.trim();
+      if (!text) { alert('LPの文章を貼り付けてください'); return; }
+    }
+
+    let riskPoints = 0;
+    const detected = { critical:[], warning:[], caution:[] };
+
+    PATTERNS.forEach(p => {
+      let hit = false;
+      let matchedWord = '';
+      for (const k of p.kw) {
+        if (text.includes(k)) { hit = true; matchedWord = k; break; }
+      }
+      if (p.invert) hit = !hit;
+
+      if (hit) {
+        riskPoints += p.weight;
+        detected[p.cat].push({ ...p, matched: matchedWord });
+      }
+    });
+
+    const MAX_RISK = 200;
+    let riskPct = Math.round((riskPoints / MAX_RISK) * 100);
+    if (riskPct > 100) riskPct = 100;
+
+    showResult(riskPct, detected);
+  }
+
+  function showResult(riskPct, detected) {
+    document.getElementById('inputCard').style.display = 'none';
+    document.getElementById('result').classList.add('show');
+
+    const card = document.getElementById('scoreCard');
+    let verdict, sub, summaryClass = '';
+    if (riskPct >= 60) {
+      verdict = 'EXTREME DANGER';
+      sub = '極めて危険な訴求パターンが多数検出';
+      card.className = 'score-card danger';
+    } else if (riskPct >= 35) {
+      verdict = 'HIGH RISK';
+      sub = '危険な訴求パターンを複数検出';
+      card.className = 'score-card warning';
+    } else if (riskPct >= 15) {
+      verdict = 'CAUTION';
+      sub = '一部の訴求パターンを検出';
+      card.className = 'score-card caution';
+    } else {
+      verdict = 'LOW RISK';
+      sub = '一般的な訴求パターンの検出は少なめ';
+      card.className = 'score-card safe';
+      summaryClass = 'safe-box';
+    }
+
+    document.getElementById('scoreNum').textContent = riskPct;
+    document.getElementById('verdictText').textContent = verdict;
+    document.getElementById('verdictSub').textContent = sub;
+
+    const totalDetected = detected.critical.length + detected.warning.length + detected.caution.length;
+    const summaryBox = document.getElementById('summaryBox');
+    summaryBox.className = 'summary-box ' + summaryClass;
+
+    if (detected.critical.length >= 3) {
+      document.getElementById('summaryTitle').textContent = '☠ 段階的販売構造の特徴を検出 ☠';
+      document.getElementById('summaryText').innerHTML =
+        '低額入口 → 個別提案 → 上位プラン誘導という段階的販売構造によく見られる特徴が複数検出されました。<br>購入前に内容・価格・契約条件を必ず確認してください。';
+    } else if (totalDetected >= 5) {
+      document.getElementById('summaryTitle').textContent = `⚠ 訴求パターンを${totalDetected}件検出`;
+      document.getElementById('summaryText').textContent = '複数の訴求パターンが見られます。慎重に判断してください。';
+    } else if (totalDetected > 0) {
+      document.getElementById('summaryTitle').textContent = `軽微な訴求パターンを${totalDetected}件検出`;
+      document.getElementById('summaryText').textContent = '一部に注意点があります。';
+    } else {
+      document.getElementById('summaryTitle').textContent = '✓ 典型的な訴求パターンは未検出';
+      document.getElementById('summaryText').textContent = 'ただし完全な安全性を保証するものではありません。';
+    }
+
+    let html = '';
+    if (detected.critical.length) {
+      html += `<div class="pattern-section">
+        <div class="pattern-title critical">☠ 構造的パターン (${detected.critical.length}件)</div>
+        <ul class="pattern-list">${detected.critical.map(p=>renderItem(p)).join('')}</ul>
+      </div>`;
+    }
+    if (detected.warning.length) {
+      html += `<div class="pattern-section">
+        <div class="pattern-title warning">⚠ 強い警告 (${detected.warning.length}件)</div>
+        <ul class="pattern-list">${detected.warning.map(p=>renderItem(p)).join('')}</ul>
+      </div>`;
+    }
+    if (detected.caution.length) {
+      html += `<div class="pattern-section">
+        <div class="pattern-title caution">▲ 注意 (${detected.caution.length}件)</div>
+        <ul class="pattern-list">${detected.caution.map(p=>renderItem(p)).join('')}</ul>
+      </div>`;
+    }
+    if (!html) html = '<p style="text-align:center;color:#555;padding:24px;letter-spacing:0.1em;">─── 典型的な訴求パターンは見つかりませんでした ───</p>';
+
+    document.getElementById('patternResults').innerHTML = html;
+    window.scrollTo({ top:0, behavior:'smooth' });
+  }
+
+  function renderItem(p) {
+    const matched = p.matched ? `<span class="matched">「${p.matched}」検出</span>` : '<span class="matched">特商法表記が見当たらない</span>';
+    return `<li class="pattern-item">
+      <div class="label">${p.label} ${matched}</div>
+      <div class="desc">${p.desc}</div>
+    </li>`;
+  }
+
+  function reset() {
+    document.getElementById('inputCard').style.display = 'block';
+    document.getElementById('result').classList.remove('show');
+    document.getElementById('lpText').value = '';
+    document.getElementById('lpUrl').value = '';
+    window.scrollTo({ top:0, behavior:'smooth' });
+  }
+</script>
+</body>
+</html>
