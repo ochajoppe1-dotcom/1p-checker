@@ -466,6 +466,128 @@
 
     .hidden { display: none; }
 
+    /* 課金モーダル */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.show { display: flex; }
+
+    .modal-box {
+      background: #0f0505;
+      border: 2px solid #ff0000;
+      border-radius: 4px;
+      padding: 32px 28px;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 0 60px rgba(255,0,0,0.5);
+      text-align: center;
+      position: relative;
+    }
+
+    .modal-box h2 {
+      color: #ff0000;
+      font-size: 20px;
+      letter-spacing: 0.1em;
+      margin-bottom: 12px;
+      animation: glow 2s infinite;
+    }
+
+    .modal-box p {
+      color: #aaa;
+      font-size: 13px;
+      line-height: 1.8;
+      margin-bottom: 20px;
+    }
+
+    .modal-box .price-tag {
+      color: #ff3333;
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .modal-box .price-sub {
+      color: #777;
+      font-size: 11px;
+      margin-bottom: 20px;
+    }
+
+    .modal-email {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #4a0000;
+      background: #0a0000;
+      color: #d4d4d4;
+      border-radius: 2px;
+      font-size: 14px;
+      font-family: inherit;
+      margin-bottom: 12px;
+      outline: none;
+    }
+
+    .modal-email:focus { border-color: #ff0000; box-shadow: 0 0 10px rgba(255,0,0,0.3); }
+    .modal-email::placeholder { color: #555; }
+
+    .modal-pay-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(180deg, #8b0000, #4a0000);
+      color: #fff;
+      border: 1px solid #ff0000;
+      border-radius: 2px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      letter-spacing: 0.1em;
+      font-family: inherit;
+      box-shadow: 0 0 15px rgba(255,0,0,0.4);
+      margin-bottom: 10px;
+    }
+
+    .modal-pay-btn:hover { background: linear-gradient(180deg, #c00000, #6a0000); }
+    .modal-pay-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .modal-close-btn {
+      background: none;
+      border: none;
+      color: #555;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+      letter-spacing: 0.1em;
+    }
+
+    .modal-close-btn:hover { color: #888; }
+
+    .scan-counter {
+      text-align: right;
+      font-size: 11px;
+      color: #555;
+      margin-top: 6px;
+      letter-spacing: 0.05em;
+    }
+
+    .scan-counter.warn { color: #ff6600; }
+
+    .premium-badge {
+      display: inline-block;
+      background: #2a0000;
+      border: 1px solid #ff0000;
+      color: #ff3333;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 2px;
+      letter-spacing: 0.1em;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
     .corner-decoration {
       position: absolute;
       width: 20px;
@@ -517,6 +639,7 @@
       <button class="sample-btn" onclick="loadSample()">サンプル</button>
     </div>
 
+    <div class="scan-counter" id="scanCounter"></div>
     <div class="loading-text hidden" id="loadingText">▼ ▼ ▼ 解析中 ▼ ▼ ▼</div>
   </div>
 
@@ -545,7 +668,20 @@
     </div>
   </div>
 
-  <div class="footer-note">
+  <!-- 課金モーダル -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal-box">
+    <h2>☠ 無料スキャン上限 ☠</h2>
+    <p>本日の無料スキャン（5回）を使い切りました。<br>プレミアムプランで無制限にスキャンできます。</p>
+    <div class="price-tag">¥500<small style="font-size:16px">/月</small></div>
+    <div class="price-sub">いつでも解約可能 · クレジットカード決済</div>
+    <input type="email" class="modal-email" id="payEmail" placeholder="メールアドレスを入力">
+    <button class="modal-pay-btn" id="payBtn" onclick="startCheckout()">▶ プレミアムプランに登録する</button>
+    <button class="modal-close-btn" onclick="closeModal()">閉じる</button>
+  </div>
+</div>
+
+<div class="footer-note">
     ─── 副業LP危険度スキャナー ───<br>
     本ツールの判定は参考情報であり、検出パターンは販売ページで一般に見られる訴求手法を示すものです。<br>必ずしも違法・不当を意味しません。
   </div>
@@ -632,6 +768,102 @@
       desc:'家族を養う苦労の演出',
       kw:['家族を養','妻と子供','子供に','家族のため'] }
   ];
+
+  // ── 課金・スキャン制限ロジック ──────────────────────────────
+  const FREE_LIMIT = 5;
+
+  function getTodayKey() {
+    return 'scans_' + new Date().toISOString().slice(0, 10);
+  }
+
+  function getScanCount() {
+    return parseInt(localStorage.getItem(getTodayKey()) || '0', 10);
+  }
+
+  function incrementScan() {
+    const key = getTodayKey();
+    localStorage.setItem(key, getScanCount() + 1);
+  }
+
+  function isPremium() {
+    const token = localStorage.getItem('premium_token');
+    if (!token) return false;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.paid === true && payload.exp * 1000 > Date.now();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function updateCounter() {
+    const el = document.getElementById('scanCounter');
+    if (!el) return;
+    if (isPremium()) {
+      el.textContent = '★ プレミアム：無制限スキャン';
+      el.className = 'scan-counter';
+      return;
+    }
+    const used = getScanCount();
+    const remain = Math.max(0, FREE_LIMIT - used);
+    el.textContent = `本日の無料スキャン残り：${remain}回`;
+    el.className = remain <= 1 ? 'scan-counter warn' : 'scan-counter';
+  }
+
+  async function verifySessionId(sessionId) {
+    try {
+      const res = await fetch('/api/verify-payment?session_id=' + encodeURIComponent(sessionId));
+      const data = await res.json();
+      if (data.token) {
+        localStorage.setItem('premium_token', data.token);
+        const url = new URL(location.href);
+        url.searchParams.delete('session_id');
+        history.replaceState({}, '', url.toString());
+        updateCounter();
+      }
+    } catch (e) {
+      console.warn('verify-payment error:', e);
+    }
+  }
+
+  async function startCheckout() {
+    const email = document.getElementById('payEmail').value.trim();
+    const btn = document.getElementById('payBtn');
+    btn.disabled = true;
+    btn.textContent = '処理中...';
+    try {
+      const res = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        location.href = data.url;
+      } else {
+        alert('エラーが発生しました: ' + (data.error || '不明'));
+        btn.disabled = false;
+        btn.textContent = '▶ プレミアムプランに登録する';
+      }
+    } catch (e) {
+      alert('通信エラーが発生しました');
+      btn.disabled = false;
+      btn.textContent = '▶ プレミアムプランに登録する';
+    }
+  }
+
+  function closeModal() {
+    document.getElementById('payModal').classList.remove('show');
+  }
+
+  // ページ読み込み時の処理
+  window.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(location.search);
+    const sessionId = params.get('session_id');
+    if (sessionId) verifySessionId(sessionId);
+    updateCounter();
+  });
+  // ───────────────────────────────────────────────────────────
 
   let currentTab = 'text';
 
@@ -750,6 +982,12 @@
   }
 
   async function analyze() {
+    // スキャン制限チェック
+    if (!isPremium() && getScanCount() >= FREE_LIMIT) {
+      document.getElementById('payModal').classList.add('show');
+      return;
+    }
+
     const btn = document.getElementById('analyzeBtn');
     const loading = document.getElementById('loadingText');
     let text = '';
@@ -811,6 +1049,8 @@
     let riskPct = Math.round((riskPoints / MAX_RISK) * 100);
     if (riskPct > 100) riskPct = 100;
 
+    incrementScan();
+    updateCounter();
     showResult(riskPct, detected);
   }
 
