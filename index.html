@@ -3,7 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>☠ 副業LP危険度スキャナー ☠</title>
+  <title>☠ 副業LP危険度スキャナー ☠ | 27の罠を機械検出</title>
+  <meta name="description" content="副業・情報商材の販売ページに含まれる典型的な訴求パターンを27項目で機械検出。危険度を%で可視化します。">
+  <meta name="theme-color" content="#8b0000">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="☠ 副業LP危険度スキャナー ☠">
+  <meta property="og:description" content="副業LPの27の罠を機械検出。危険度を%で表示。情報商材を買う前に1スキャン。">
+  <meta property="og:url" content="https://1p-checker.vercel.app/">
+  <meta property="og:site_name" content="副業LP危険度スキャナー">
+  <meta property="og:locale" content="ja_JP">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="☠ 副業LP危険度スキャナー ☠">
+  <meta name="twitter:description" content="副業LPの27の罠を機械検出。危険度を%で表示。">
+
+  <script defer src="/_vercel/insights/script.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -800,7 +815,7 @@
     const el = document.getElementById('scanCounter');
     if (!el) return;
     if (isPremium()) {
-      el.textContent = '★ プレミアム：無制限スキャン';
+      el.innerHTML = '★ プレミアム会員：無制限スキャン &nbsp;<a href="#" onclick="openBillingPortal();return false;" style="color:#888;font-size:10px;text-decoration:underline;">[サブスク管理・解約]</a>';
       el.className = 'scan-counter';
       return;
     }
@@ -808,6 +823,25 @@
     const remain = Math.max(0, FREE_LIMIT - used);
     el.textContent = `本日の無料スキャン残り：${remain}回`;
     el.className = remain <= 1 ? 'scan-counter warn' : 'scan-counter';
+  }
+
+  async function openBillingPortal() {
+    try {
+      const token = localStorage.getItem('premium_token');
+      const res = await fetch('/api/billing-portal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        location.href = data.url;
+      } else {
+        alert('管理画面を開けませんでした：' + (data.error || '不明なエラー'));
+      }
+    } catch (e) {
+      alert('通信エラーが発生しました');
+    }
   }
 
   async function verifySessionId(sessionId) {
@@ -820,10 +854,23 @@
         url.searchParams.delete('session_id');
         history.replaceState({}, '', url.toString());
         updateCounter();
+        showPaymentSuccess();
+      } else if (data.error) {
+        alert('決済の確認に失敗しました：' + data.error);
       }
     } catch (e) {
       console.warn('verify-payment error:', e);
+      alert('決済の確認中に通信エラーが発生しました。サポートまでご連絡ください。');
     }
+  }
+
+  function showPaymentSuccess() {
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#003a00,#001a00);color:#66ff66;border:1px solid #00aa00;border-radius:4px;padding:14px 24px;z-index:2000;box-shadow:0 0 20px rgba(0,170,0,0.5);font-size:14px;letter-spacing:0.1em;max-width:90%;text-align:center;';
+    banner.innerHTML = '✓ プレミアムプランへの登録が完了しました<br><span style="font-size:11px;color:#aaffaa;">無制限スキャンが解放されました</span>';
+    document.body.appendChild(banner);
+    setTimeout(() => { banner.style.transition = 'opacity 0.6s'; banner.style.opacity = '0'; }, 5000);
+    setTimeout(() => { banner.remove(); }, 5800);
   }
 
   async function startCheckout() {
